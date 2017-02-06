@@ -1,6 +1,7 @@
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -11,8 +12,7 @@ public class Address{
 	  @Id
 	  @GeneratedValue
 	  private Integer id;
-	  @OneToOne
-	  @Id
+	  @ManyToMany
 	  private Street street;
 	  private String city;
 	  private String province;

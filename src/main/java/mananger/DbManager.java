@@ -1,17 +1,14 @@
 package mananger;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import dialect.Column;
 import dialect.Dialect;
 import dialect.Table;
 import operator.Operator;

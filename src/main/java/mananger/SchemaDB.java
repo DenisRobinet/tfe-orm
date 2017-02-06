@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import dialect.Column;
+import dialect.Filling;
 import dialect.Fk;
 import dialect.Table;
 
@@ -23,7 +24,11 @@ public class SchemaDB {
 	public ArrayList<Table> generate()
 	{
 		
+		
 		ArrayList<Table> tables = new ArrayList<>();
+		ArrayList<Filling> filling = new ArrayList<Filling>();
+				
+		
 		for(int i=0;i<Classes.size();++i)
 		{
 			
@@ -89,7 +94,7 @@ public class SchemaDB {
 							//Do by Many to one
 						}
 						else if(anno instanceof javax.persistence.ManyToMany)
-						{/*
+						{
 							int k=i;
 							while(k>=0 && Classes.get(k)!=type)
 							{
@@ -98,20 +103,9 @@ public class SchemaDB {
 							
 							if(k!=-1)
 							{
-								
-								
-								ArrayList<Column> ref = tables.get(k).getIds();
-								
-								ArrayList<Column> arrayFK = new ArrayList<>();
-								for (Column column : ref) {
-									Column temp = new Column("FK_"+tables.get(k).getName()+"_"+column.getName(), column.getType(), false);
-									col.add(temp);
-									arrayFK.add(temp);
-								}
-								
-								Fk fk = new Fk(arrayFK, ref, tables.get(k));
-								fks.add(fk);
-							}*/
+								Filling fillTemp = new Filling(tables.get(k), tables.get(tables.size()-1));
+								filling.add(fillTemp);
+							}
 						}
 						else if(anno instanceof javax.persistence.Id)
 				    	{
@@ -164,6 +158,38 @@ public class SchemaDB {
 			    	
 				}
 			}
+		}
+		
+		
+		for (Filling fill : filling) {
+			 
+			ArrayList<Column> arrayFK = new ArrayList<>();
+			ArrayList<Fk> fks = new ArrayList<>();
+			ArrayList<Column> cols  = new ArrayList<>();
+			
+			ArrayList<Column> ref = fill.getTable1().getIds();
+			for (Column column : ref) {
+				Column temp = new Column("FK_"+fill.getTable1().getName()+"_"+column.getName(), column.getType(), false);
+				arrayFK.add(temp);
+			}
+			
+			cols.addAll(arrayFK);
+			Fk fk = new Fk(arrayFK, ref, fill.getTable1());
+			fks.add(fk);
+			
+			arrayFK = new ArrayList<>();
+			ref = fill.getTable2().getIds();
+			for (Column column : ref) {
+				Column temp = new Column("FK_"+fill.getTable2().getName()+"_"+column.getName(), column.getType(), false);
+				arrayFK.add(temp);
+			}
+			cols.addAll(arrayFK);
+			fk = new Fk(arrayFK, ref, fill.getTable2());
+			fks.add(fk);
+			
+			Table tableTemp = new Table("Fill_"+fill.getTable1().getName()+"_"+fill.getTable2().getName(), cols, cols, fks);
+		
+			tables.add(tableTemp);
 		}
 		
 		return tables;
