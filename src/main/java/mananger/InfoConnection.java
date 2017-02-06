@@ -7,16 +7,18 @@ public class InfoConnection {
 	
 	private String name;
 	private String url;
+	private String database;
 	private String user;
 	private String password;
 	private String driver;
 	private String dialect;
 	private boolean printInfo;
 	
-	public InfoConnection(String name, String url, String user,String password, String driver, String dialect, boolean printInfo) {
+	public InfoConnection(String name, String url,String database, String user,String password, String driver, String dialect, boolean printInfo) {
 		super();
 		this.name = name;
 		this.url = url;
+		this.database = database;
 		this.user = user;
 		this.password = password;
 		this.driver = driver;
@@ -30,6 +32,10 @@ public class InfoConnection {
 
 	public String getUrl() {
 		return url;
+	}
+	
+	public String getDatabase() {
+		return database;
 	}
 
 	public String getUser() {

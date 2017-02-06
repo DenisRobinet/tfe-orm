@@ -1,12 +1,12 @@
 package dialect;
 
+
+@SuppressWarnings("rawtypes")
 public class Column {
 	private String name;
-	@SuppressWarnings("rawtypes")
 	private Class type;
 	private boolean autoIncrement;
 	
-	@SuppressWarnings("rawtypes")
 	public Column(String name, Class type, boolean autoIncrement) {
 		super();
 		this.name = name;
@@ -18,13 +18,24 @@ public class Column {
 		return name;
 	}
 
-	@SuppressWarnings("rawtypes")
 	public Class getType() {
 		return type;
 	}
 
 	public boolean isAutoIncrement() {
 		return autoIncrement;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public void setType(Class type) {
+		this.type = type;
+	}
+
+	public void setAutoIncrement(boolean autoIncrement) {
+		this.autoIncrement = autoIncrement;
 	}
 	
 	

@@ -12,4 +12,7 @@ public abstract class Dialect{
 	@SuppressWarnings("rawtypes")
 	public abstract String typeOf(Class type);
 	
+	public abstract boolean databaseEmpty(Connection connection, InfoConnection info) throws SQLException;
+	
+	public abstract void compile(Table tables, StringBuilder build);
 }

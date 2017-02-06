@@ -4,77 +4,59 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import dialect.Column;
 import dialect.Dialect;
+import dialect.Table;
 import operator.Operator;
 
+/**
+ * ACCEPTED TYPE : Integer, Double , String, LocalDateTime
+ * @author Robinet
+ *
+ */
 public class DbManager {
 
 	InfoConnection info;
 	Dialect dialect;
 	Connection connection;
 	
-	public DbManager(InfoConnection info) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException{
+	public DbManager(InfoConnection info, SchemaDB schema) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException{
 		
 		this.info = info;
 		dialect = (Dialect)ClassLoader.getSystemClassLoader().loadClass(info.getDialect()).newInstance();
 
 		connection = dialect.getConnection(info);
-	}
-	
-	@SuppressWarnings("rawtypes")
-	public void addModel(Class model) throws SQLException
-	{
-	    Field[] fieldList = model.getDeclaredFields();
-		Column[] col = new Column[fieldList.length];
-		ArrayList<String> id = new ArrayList<String>();
-	    int i=0;
-	    for(Field field : fieldList){
-	    	
-			  Class type = field.getType();
-	    	  String name = field.getName();
-	    	  Annotation[] annotations = field.getDeclaredAnnotations();
-	    	  boolean autoIncrement = false;
+		
+		if(dialect.databaseEmpty(connection, info))
+		{
+			ArrayList<Table> tables = schema.generate();
+			
+			
+			for (Table table : tables) {
+				StringBuilder build = new StringBuilder();
+				dialect.compile(table, build);
+				build.append(";");
+				String query = build.toString();
 
-	    	  for(Annotation anno : annotations)
-	    	  {
-	    		  if(anno instanceof javax.persistence.GeneratedValue)
-	    		  {
-	    			  autoIncrement = true;
-	    		  }
-	    		  else if(anno instanceof javax.persistence.Id)
-	    		  {
-	    			  id.add(name);
-	    		  }
-	    	  }
-	    	  col[i] = new Column(name, type, autoIncrement);
-	    	  ++i;
-	    }
-	    
-	    String commande = createCommande(model.getName(), col, id);
-	    
-	    if(info.isPrintInfo())
-	    {
-	    	System.out.println(commande);
-	    }
-	    
-	    connection.prepareStatement(commande).execute();
-	    
+				print(query);
+				connection.prepareStatement(query).execute();
+			}			
+		}
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ArrayList<Model> where(Class type, Operator op) throws SQLException, NoSuchMethodError, InvocationTargetException, IllegalAccessException, InstantiationException, IllegalArgumentException, NoSuchMethodException, SecurityException{
+	public ArrayList<Object> where(Class type, Operator op) throws SQLException, NoSuchMethodError, InvocationTargetException, IllegalAccessException, InstantiationException, IllegalArgumentException, NoSuchMethodException, SecurityException{
 		
 		String command = whereCommande(type.getName(), op);
 		
-	    if(info.isPrintInfo())
-	    {
-	    	System.out.println(command);
-	    }
+		print(command);
 		
 		ResultSet set = connection.prepareStatement(command).executeQuery();
 		
@@ -87,7 +69,7 @@ public class DbManager {
 			cArg[i] = fields[i].getType();
 		}
 		
-		ArrayList<Model> res = new ArrayList<>();
+		ArrayList<Object> res = new ArrayList<>();
 		while(set.next())
 		{
 			Object[] initargs = new Object[cArg.length];
@@ -98,69 +80,91 @@ public class DbManager {
 				
 			}
 			
-			res.add((Model)type.getDeclaredConstructor(cArg).newInstance(initargs));
+			res.add((Object)type.getDeclaredConstructor(cArg).newInstance(initargs));
 		}
 		
 		return res;
 	}
-
 	
+	@SuppressWarnings("rawtypes")
+	public void insert(Object model) throws IllegalArgumentException, IllegalAccessException, SQLException
+	{
+		Class type = model.getClass();
+		String TableName = type.getName();
+		Field[] fields = type.getDeclaredFields();
+		Object[] value = new Object[fields.length];
+		
+		for (int i=0;i<fields.length;++i) {
+			fields[i].setAccessible(true);
+			value[i] = fields[i].get(model);
+		}
+		
+		String command = insertCommande(TableName, value);
+		
+		PreparedStatement prep = connection.prepareStatement(command);
+		for(int i=0;i<value.length;++i)
+		{
+			prep.setObject(i+1, value[i]);
+		}
+		prep.execute();
+		
+		print(command+"\nValues:"+Arrays.toString(value));
+		
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void update(Object model, Operator op) throws IllegalArgumentException, IllegalAccessException
+	{
+		Class type = model.getClass();
+		String TableName = type.getName();
+		Field[] fields = type.getDeclaredFields();
+		Object[] value = new Object[fields.length];
+		
+		for (int i=0;i<fields.length;++i) {
+			fields[i].setAccessible(true);
+			value[i] = fields[i].get(model);
+		}
+	}
+	
+	public void delete(Object model)
+	{
+		
+	}
+	
+	
+	private void print(String print)
+	{
+		if(info.isPrintInfo())
+		{
+			System.out.println(print);
+		}
+	}
 	
 	
 	//TODO WITH DIALECT ------------------------------------------------------------------
-	private String createCommande(String tableName, Column[] columns, ArrayList<String> ids)
-	{
-
-		StringBuilder build = new StringBuilder();
-		
-		build.append("CREATE TABLE ");
-		build.append(tableName);
-		build.append(" (\n");
-		
-		
-		build.append('\t');
-		build.append(columns[0].getName());
-		build.append(" ");
-		
-		build.append(dialect.typeOf(columns[0].getType()));
-		
-		if(columns[0].isAutoIncrement())
-		{
-			build.append("AUTO_INCREMENT ");
-		}
-		
-		for (int i=1;i<columns.length;++i) {
-			build.append(",\n\t");
-			
-			build.append(columns[i].getName());
-			build.append(" ");
-			
-			build.append(dialect.typeOf(columns[i].getType()));
-			
-			if(columns[i].isAutoIncrement())
-			{
-				build.append("AUTO_INCREMENT ");
-			}
-			
-		}
-		
-		
-		build.append(",\n\tPRIMARY KEY (");
-		build.append(ids.get(0));
-		
-		for (int i=1; i<ids.size();++i) {
-			build.append(" ,");
-			build.append(ids.get(i));
-		}
-		build.append(")");
-		
-		build.append("\n)");
-		
-		return build.toString();
-	}
 	
 	private String whereCommande(String table, Operator op)
 	{
 		return "SELECT * FROM "+table+" WHERE "+op.getCondtion();
+	}
+	
+	private String insertCommande(String tableName, Object[] value)
+	{
+		StringBuilder build = new StringBuilder();
+		
+		build.append("INSERT INTO ");
+		build.append(tableName);
+		build.append("\nVALUES(");
+		//build.append(value[0]);		
+		build.append("?");
+		
+		for(int i=1;i<value.length;++i)
+		{
+			build.append(",");
+			//build.append(dialect.valueOf(value[i]));
+			build.append("?");
+		}
+		build.append(");");
+		return build.toString();
 	}
 }

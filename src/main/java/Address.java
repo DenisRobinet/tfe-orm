@@ -1,33 +1,21 @@
-import java.sql.ResultSet;
-
+import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
-import mananger.Model;
-
-public class Address extends Model{
+@Entity
+public class Address{
 
 	  @Id
 	  @GeneratedValue
 	  private Integer id;
-	  private String street;
+	  @OneToOne
+	  private Street street;
 	  private String city;
 	  private String province;
 	  private String country;
 	  private String postcode;
 
-
-	  
-	  
-	  public Address(Integer id, String street, String city, String province, String country, String postcode) {
-		super();
-		this.id = id;
-		this.street = street;
-		this.city = city;
-		this.province = province;
-		this.country = country;
-		this.postcode = postcode;
-	}
 
 	/**
 	   * @return the id
@@ -47,14 +35,14 @@ public class Address extends Model{
 	  /**
 	   * @return the street
 	   */
-	  public String getStreet() {
+	  public Street getStreet() {
 	    return street;
 	  }
 
 	  /**
 	   * @param street the street to set
 	   */
-	  public Address setStreet(String street) {
+	  public Address setStreet(Street street) {
 	    this.street = street;
 	    return this;
 	  }
