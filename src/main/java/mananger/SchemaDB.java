@@ -89,8 +89,29 @@ public class SchemaDB {
 							//Do by Many to one
 						}
 						else if(anno instanceof javax.persistence.ManyToMany)
-						{
+						{/*
+							int k=i;
+							while(k>=0 && Classes.get(k)!=type)
+							{
+								--k;
+							}
 							
+							if(k!=-1)
+							{
+								
+								
+								ArrayList<Column> ref = tables.get(k).getIds();
+								
+								ArrayList<Column> arrayFK = new ArrayList<>();
+								for (Column column : ref) {
+									Column temp = new Column("FK_"+tables.get(k).getName()+"_"+column.getName(), column.getType(), false);
+									col.add(temp);
+									arrayFK.add(temp);
+								}
+								
+								Fk fk = new Fk(arrayFK, ref, tables.get(k));
+								fks.add(fk);
+							}*/
 						}
 						else if(anno instanceof javax.persistence.Id)
 				    	{

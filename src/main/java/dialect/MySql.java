@@ -120,7 +120,14 @@ public class MySql extends Dialect{
 		
 		if(res.next())
 		{
-			return true;
+			if(res.getInt(1)==0)
+			{
+				return true;
+			}
+			else{
+				return false;
+			}
+			
 		}
 		else{
 			return false;
