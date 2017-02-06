@@ -4,4 +4,19 @@
   <artifactId>tfe-orm</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <description>little orm which work on desktop and android (mySQL and sqlite)</description>
+  <dependencies>
+	<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+	<dependency>
+	    <groupId>mysql</groupId>
+	    <artifactId>mysql-connector-java</artifactId>
+	    <version>5.1.40</version>
+	</dependency>
+	<!-- https://mvnrepository.com/artifact/javax.persistence/persistence-api -->
+	<dependency>
+	    <groupId>javax.persistence</groupId>
+	    <artifactId>persistence-api</artifactId>
+	    <version>1.0.2</version>
+	</dependency>
+  	
+  </dependencies>
 </project>
