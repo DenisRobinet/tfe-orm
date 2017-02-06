@@ -75,15 +75,18 @@ public class MySql extends Dialect{
 			
 		}
 		
-		
-		build.append(",\n\tPRIMARY KEY (");
-		build.append(table.getIds().get(0).getName());
-		
-		for (int i=1; i<table.getIds().size();++i) {
-			build.append(" ,");
-			build.append(table.getIds().get(i).getName());
+		if(table.getIds().size()>0)
+		{
+			build.append(",\n\tPRIMARY KEY (");
+			build.append(table.getIds().get(0).getName());
+			
+			for (int i=1; i<table.getIds().size();++i) {
+				build.append(" ,");
+				build.append(table.getIds().get(i).getName());
+			}
+			build.append(")");
 		}
-		build.append(")");
+
 		
 		for (Fk fk : table.getFks()) {
 			build.append(",\n\tFOREIGN KEY (");

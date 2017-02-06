@@ -46,9 +46,10 @@ public class SchemaDB {
 		    	boolean autoIncrement = false;
 				if(type!=Integer.class && type!=Double.class && type!=String.class && type!=LocalDateTime.class)
 				{
+					boolean id = false;
 					for(Annotation anno : annotations)
 			    	{
-						if(anno instanceof javax.persistence.OneToOne)
+						if(anno instanceof javax.persistence.OneToOne || anno instanceof javax.persistence.ManyToOne)
 						{
 
 							int k=i;
@@ -71,17 +72,40 @@ public class SchemaDB {
 								Fk fk = new Fk(arrayFK, ref, tables.get(k));
 								fks.add(fk);
 							}
+							else if(anno instanceof javax.persistence.ManyToOne)
+							{
+									//TODO verify if can do SQL error (FK)
+									tables.remove(tables.size()-1);
+									Class temp= Classes.remove(i);
+									Classes.add(i+1, temp);
+									--i;
+								
+							}
 							
 
 						}
-						/*else if(anno instanceof javax.persistence.Id)
+						else if(anno instanceof javax.persistence.OneToMany)
+						{
+							//Do by Many to one
+						}
+						else if(anno instanceof javax.persistence.ManyToMany)
+						{
+							
+						}
+						else if(anno instanceof javax.persistence.Id)
 				    	{
-							ids.add(name);
-				    	}*/
+							id = true;
+				    	}
 						else{
 							throw new UnsupportedOperationException();
 						}
 			    	}
+					
+					if(id == true)
+					{
+						if(fks.size()>0)
+							ids.addAll(fks.get(fks.size()-1).getCols());
+					}
 					
 				}
 				else if(type==Integer.class)
