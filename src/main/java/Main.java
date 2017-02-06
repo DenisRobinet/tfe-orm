@@ -1,11 +1,19 @@
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.function.BooleanSupplier;
+import java.util.function.LongFunction;
+import java.util.function.Predicate;
 
 import mananger.DbManager;
 import mananger.InfoConnection;
+import mananger.Model;
+import operator.Eq;
 
 public class Main {
 
 	public static void main(String[] args) {
+		
 		
 		String name = "MySQL";
 		String url = "jdbc:mysql://localhost:3306/tfe";
@@ -19,15 +27,15 @@ public class Main {
 		
 
 			try {
-				try {
+
 					DbManager test = new DbManager(info);
-					Address add = new Address();
-					test.addModel(add);
+					//test.addModel(Address.class);
+					ArrayList<Model> res = test.where(Address.class, new Eq("id", "1")); 
 					
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+					for (Model model : res) {
+						System.out.println(model);
+					}
+
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -37,9 +45,29 @@ public class Main {
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			} catch (NoSuchMethodError e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 
-
+	
 	}
+	
+	
 
 }

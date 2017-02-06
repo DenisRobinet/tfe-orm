@@ -2,12 +2,15 @@ package mananger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
 import dialect.Column;
 import dialect.Dialect;
+import operator.Operator;
 
 public class DbManager {
 
@@ -23,17 +26,15 @@ public class DbManager {
 		connection = dialect.getConnection(info);
 	}
 	
-	public void addModel(Object model) throws SQLException
+	@SuppressWarnings("rawtypes")
+	public void addModel(Class model) throws SQLException
 	{
-
-		
-	    Field[] fieldList = model.getClass().getDeclaredFields();
+	    Field[] fieldList = model.getDeclaredFields();
 		Column[] col = new Column[fieldList.length];
 		ArrayList<String> id = new ArrayList<String>();
 	    int i=0;
 	    for(Field field : fieldList){
 	    	
-	    	  @SuppressWarnings("rawtypes")
 			  Class type = field.getType();
 	    	  String name = field.getName();
 	    	  Annotation[] annotations = field.getDeclaredAnnotations();
@@ -54,7 +55,7 @@ public class DbManager {
 	    	  ++i;
 	    }
 	    
-	    String commande = createCommande(model.getClass().getName(), col, id);
+	    String commande = createCommande(model.getName(), col, id);
 	    
 	    if(info.isPrintInfo())
 	    {
@@ -65,6 +66,48 @@ public class DbManager {
 	    
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public ArrayList<Model> where(Class type, Operator op) throws SQLException, NoSuchMethodError, InvocationTargetException, IllegalAccessException, InstantiationException, IllegalArgumentException, NoSuchMethodException, SecurityException{
+		
+		String command = whereCommande(type.getName(), op);
+		
+	    if(info.isPrintInfo())
+	    {
+	    	System.out.println(command);
+	    }
+		
+		ResultSet set = connection.prepareStatement(command).executeQuery();
+		
+		
+		Field[] fields =  type.getDeclaredFields();
+		Class[] cArg = new Class[fields.length];
+		
+		for(int i=0;i<cArg.length;++i)
+		{
+			cArg[i] = fields[i].getType();
+		}
+		
+		ArrayList<Model> res = new ArrayList<>();
+		while(set.next())
+		{
+			Object[] initargs = new Object[cArg.length];
+			
+			for (int i=0; i<fields.length;++i) {
+							
+				initargs[i] = fields[i].getType().cast(set.getObject(fields[i].getName()));
+				
+			}
+			
+			res.add((Model)type.getDeclaredConstructor(cArg).newInstance(initargs));
+		}
+		
+		return res;
+	}
+
+	
+	
+	
+	//TODO WITH DIALECT ------------------------------------------------------------------
 	private String createCommande(String tableName, Column[] columns, ArrayList<String> ids)
 	{
 
@@ -116,4 +159,8 @@ public class DbManager {
 		return build.toString();
 	}
 	
+	private String whereCommande(String table, Operator op)
+	{
+		return "SELECT * FROM "+table+" WHERE "+op.getCondtion();
+	}
 }

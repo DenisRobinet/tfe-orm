@@ -1,7 +1,11 @@
+import java.sql.ResultSet;
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-public class Address{
+import mananger.Model;
+
+public class Address extends Model{
 
 	  @Id
 	  @GeneratedValue
@@ -12,7 +16,20 @@ public class Address{
 	  private String country;
 	  private String postcode;
 
-	  /**
+
+	  
+	  
+	  public Address(Integer id, String street, String city, String province, String country, String postcode) {
+		super();
+		this.id = id;
+		this.street = street;
+		this.city = city;
+		this.province = province;
+		this.country = country;
+		this.postcode = postcode;
+	}
+
+	/**
 	   * @return the id
 	   */
 	  public Integer getId() {
@@ -101,6 +118,13 @@ public class Address{
 	    this.postcode = postcode;
 	    return this;
 	  }
+
+	@Override
+	public String toString() {
+		return "Address [id=" + id + ", street=" + street + ", city=" + city + ", province=" + province + ", country="
+				+ country + ", postcode=" + postcode + "]";
+	}
+	  
 
 	
 }
