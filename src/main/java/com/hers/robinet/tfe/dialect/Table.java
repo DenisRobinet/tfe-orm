@@ -1,4 +1,4 @@
-package dialect;
+package com.hers.robinet.tfe.dialect;
 
 import java.util.ArrayList;
 

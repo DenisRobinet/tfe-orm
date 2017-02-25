@@ -1,4 +1,4 @@
-package mananger;
+package com.hers.robinet.tfe.mananger;
 
 public class InfoConnection {
 

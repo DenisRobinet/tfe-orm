@@ -1,4 +1,4 @@
-package mananger;
+package com.hers.robinet.tfe.mananger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -6,12 +6,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import dialect.Dialect;
-import dialect.Table;
-import operator.Operator;
+import com.hers.robinet.tfe.dialect.Dialect;
+import com.hers.robinet.tfe.dialect.Table;
+import com.hers.robinet.tfe.operator.Operator;
 
 /**
  * ACCEPTED TYPE : Integer, Double , String, LocalDateTime
@@ -27,15 +28,14 @@ public class DbManager {
 	public DbManager(InfoConnection info, SchemaDB schema) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException{
 		
 		this.info = info;
-		dialect = (Dialect)ClassLoader.getSystemClassLoader().loadClass(info.getDialect()).newInstance();
+		dialect = (Dialect)Class.forName(info.getDialect()).newInstance();
 
 		connection = dialect.getConnection(info);
 		
+		ArrayList<Table> tables = schema.generate();
+		
 		if(dialect.databaseEmpty(connection, info))
-		{
-			ArrayList<Table> tables = schema.generate();
-			
-			
+		{	
 			for (Table table : tables) {
 				StringBuilder build = new StringBuilder();
 				dialect.compile(table, build);
@@ -46,6 +46,37 @@ public class DbManager {
 				connection.prepareStatement(query).execute();
 			}			
 		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public void insert(Object model) throws IllegalArgumentException, IllegalAccessException, SQLException
+	{
+		Class type = model.getClass();
+		String TableName = type.getName();
+		Field[] fields = type.getDeclaredFields();
+		Object[] value = new Object[fields.length];
+		
+		for (int i=0;i<fields.length;++i) {
+			
+			if(isPrimaryType(fields[i].getType()))
+			{
+				
+			}
+			fields[i].setAccessible(true);
+			value[i] = fields[i].get(model);
+		}
+		
+		String command = insertCommande(TableName, value);
+		
+		PreparedStatement prep = connection.prepareStatement(command);
+		for(int i=0;i<value.length;++i)
+		{
+			prep.setObject(i+1, value[i]);
+		}
+		prep.execute();
+		
+		print(command+"\nValues:"+Arrays.toString(value));
+		
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
@@ -66,7 +97,7 @@ public class DbManager {
 			cArg[i] = fields[i].getType();
 		}
 		
-		ArrayList<Object> res = new ArrayList<>();
+		ArrayList<Object> res = new ArrayList();
 		while(set.next())
 		{
 			Object[] initargs = new Object[cArg.length];
@@ -83,31 +114,7 @@ public class DbManager {
 		return res;
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public void insert(Object model) throws IllegalArgumentException, IllegalAccessException, SQLException
-	{
-		Class type = model.getClass();
-		String TableName = type.getName();
-		Field[] fields = type.getDeclaredFields();
-		Object[] value = new Object[fields.length];
-		
-		for (int i=0;i<fields.length;++i) {
-			fields[i].setAccessible(true);
-			value[i] = fields[i].get(model);
-		}
-		
-		String command = insertCommande(TableName, value);
-		
-		PreparedStatement prep = connection.prepareStatement(command);
-		for(int i=0;i<value.length;++i)
-		{
-			prep.setObject(i+1, value[i]);
-		}
-		prep.execute();
-		
-		print(command+"\nValues:"+Arrays.toString(value));
-		
-	}
+
 	
 	@SuppressWarnings("rawtypes")
 	public void update(Object model, Operator op) throws IllegalArgumentException, IllegalAccessException
@@ -126,6 +133,11 @@ public class DbManager {
 	public void delete(Object model)
 	{
 		
+	}
+	
+	protected boolean isPrimaryType(Class type)
+	{
+		return type == Integer.class || type == Double.class || type == String.class || type == Timestamp.class;
 	}
 	
 	

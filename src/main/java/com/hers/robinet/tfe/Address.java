@@ -1,3 +1,5 @@
+package com.hers.robinet.tfe;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;

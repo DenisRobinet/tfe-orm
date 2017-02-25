@@ -1,4 +1,4 @@
-package operator;
+package com.hers.robinet.tfe.operator;
 
 public abstract interface Operator {
 

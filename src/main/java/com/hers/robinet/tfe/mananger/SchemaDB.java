@@ -1,20 +1,20 @@
-package mananger;
+package com.hers.robinet.tfe.mananger;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 
-import dialect.Column;
-import dialect.Filling;
-import dialect.Fk;
-import dialect.Table;
+import com.hers.robinet.tfe.dialect.Column;
+import com.hers.robinet.tfe.dialect.Filling;
+import com.hers.robinet.tfe.dialect.Fk;
+import com.hers.robinet.tfe.dialect.Table;
 
 
 @SuppressWarnings("rawtypes")
 public class SchemaDB {
 	
-	ArrayList<Class> Classes = new ArrayList<>();
+	ArrayList<Class> Classes = new ArrayList();
 	
 	public void add(Class object)
 	{
@@ -25,7 +25,7 @@ public class SchemaDB {
 	{
 		
 		
-		ArrayList<Table> tables = new ArrayList<>();
+		ArrayList<Table> tables = new ArrayList();
 		ArrayList<Filling> filling = new ArrayList<Filling>();
 				
 		
@@ -34,7 +34,7 @@ public class SchemaDB {
 			
 			Field[] fields = Classes.get(i).getDeclaredFields();
 			
-			String tableName = Classes.get(i).getName();
+			String tableName = Classes.get(i).getSimpleName();
 			ArrayList<Column> col = new ArrayList<Column>();
 			ArrayList<Column> ids = new ArrayList<Column>();
 			ArrayList<Fk> fks  = new ArrayList<Fk>();
@@ -49,7 +49,7 @@ public class SchemaDB {
 				
 				Annotation[] annotations = fields[j].getDeclaredAnnotations();
 		    	boolean autoIncrement = false;
-				if(type!=Integer.class && type!=Double.class && type!=String.class && type!=LocalDateTime.class)
+				if(type!=Integer.class && type!=Double.class && type!=String.class && type!=Timestamp.class)
 				{
 					boolean id = false;
 					for(Annotation anno : annotations)
@@ -67,7 +67,7 @@ public class SchemaDB {
 							{
 								ArrayList<Column> ref = tables.get(k).getIds();
 								
-								ArrayList<Column> arrayFK = new ArrayList<>();
+								ArrayList<Column> arrayFK = new ArrayList();
 								for (Column column : ref) {
 									Column temp = new Column("FK_"+tables.get(k).getName()+"_"+column.getName(), column.getType(), false);
 									col.add(temp);
@@ -163,9 +163,9 @@ public class SchemaDB {
 		
 		for (Filling fill : filling) {
 			 
-			ArrayList<Column> arrayFK = new ArrayList<>();
-			ArrayList<Fk> fks = new ArrayList<>();
-			ArrayList<Column> cols  = new ArrayList<>();
+			ArrayList<Column> arrayFK = new ArrayList();
+			ArrayList<Fk> fks = new ArrayList();
+			ArrayList<Column> cols  = new ArrayList();
 			
 			ArrayList<Column> ref = fill.getTable1().getIds();
 			for (Column column : ref) {
@@ -177,7 +177,7 @@ public class SchemaDB {
 			Fk fk = new Fk(arrayFK, ref, fill.getTable1());
 			fks.add(fk);
 			
-			arrayFK = new ArrayList<>();
+			arrayFK = new ArrayList();
 			ref = fill.getTable2().getIds();
 			for (Column column : ref) {
 				Column temp = new Column("FK_"+fill.getTable2().getName()+"_"+column.getName(), column.getType(), false);

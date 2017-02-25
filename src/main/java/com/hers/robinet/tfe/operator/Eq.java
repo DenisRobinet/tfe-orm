@@ -1,4 +1,4 @@
-package operator;
+package com.hers.robinet.tfe.operator;
 
 public class Eq implements Operator {
 
@@ -10,11 +10,10 @@ public class Eq implements Operator {
 		this.champ = champ;
 		this.value = value;
 	}
-
-	@Override
+	
 	public String getCondtion() {
-		
 		return champ +"=" +value;
 	}
+
 
 }
