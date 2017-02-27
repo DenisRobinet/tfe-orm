@@ -1,5 +1,7 @@
 package com.hers.robinet.tfe;
 
+import java.util.List;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -8,6 +10,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.hers.robinet.tfe.mananger.RelationShip;
+
 @Entity
 public class Street {
 
@@ -15,6 +19,6 @@ public class Street {
 	@GeneratedValue
 	private Integer id;
 	private String name;
-	@ManyToMany
-	private Address adresses;
+	@ManyToOne
+	private RelationShip<Address> adresses;
 }

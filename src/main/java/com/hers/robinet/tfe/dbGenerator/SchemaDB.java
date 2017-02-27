@@ -2,6 +2,7 @@ package com.hers.robinet.tfe.dbGenerator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 
@@ -16,7 +17,7 @@ public class SchemaDB {
 		Classes.add(object);
 	}
 	
-	public ArrayList<Table> generate()
+	public ArrayList<Table> generate() throws NoSuchFieldException, SecurityException, ClassNotFoundException
 	{
 		
 		
@@ -41,7 +42,6 @@ public class SchemaDB {
 				Class type = fields[j].getType();
 				String name = fields[j].getName();
 				
-				
 				Annotation[] annotations = fields[j].getDeclaredAnnotations();
 		    	boolean autoIncrement = false;
 				if(type!=Integer.class && type!=Double.class && type!=String.class && type!=Timestamp.class)
@@ -52,6 +52,7 @@ public class SchemaDB {
 						if(anno instanceof javax.persistence.OneToOne || anno instanceof javax.persistence.ManyToOne)
 						{
 
+							type = (Class<?>)(((ParameterizedType)fields[j].getGenericType()).getActualTypeArguments()[0]);
 							int k=i;
 							while(k>=0 && Classes.get(k)!=type)
 							{
@@ -71,18 +72,10 @@ public class SchemaDB {
 								
 								Fk fk = new Fk(arrayFK, ref, tables.get(k));
 								fks.add(fk);
-							}
-							else if(anno instanceof javax.persistence.ManyToOne)
+							}else if(anno instanceof javax.persistence.ManyToOne)
 							{
-									//TODO verify if can do SQL error (FK)
-									tables.remove(tables.size()-1);
-									Class temp= Classes.remove(i);
-									Classes.add(i+1, temp);
-									--i;
-								
+								throw new UnsupportedOperationException();
 							}
-							
-
 						}
 						else if(anno instanceof javax.persistence.OneToMany)
 						{
@@ -90,6 +83,10 @@ public class SchemaDB {
 						}
 						else if(anno instanceof javax.persistence.ManyToMany)
 						{
+					        ParameterizedType stringListType = (ParameterizedType) fields[j].getGenericType();
+					        ParameterizedType relation = (ParameterizedType)stringListType.getActualTypeArguments()[0];
+					        type = Class.forName(relation.getActualTypeArguments()[0].getTypeName());
+					        
 							int k=i;
 							while(k>=0 && Classes.get(k)!=type)
 							{

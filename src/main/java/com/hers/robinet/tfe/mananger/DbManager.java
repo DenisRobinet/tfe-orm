@@ -26,7 +26,7 @@ public class DbManager {
 	Dialect dialect;
 	Connection connection;
 	
-	public DbManager(InfoConnection info, SchemaDB schema) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException{
+	public DbManager(InfoConnection info, SchemaDB schema) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, NoSuchFieldException, SecurityException{
 		
 		this.info = info;
 		dialect = (Dialect)Class.forName(info.getDialect()).newInstance();

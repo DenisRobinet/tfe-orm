@@ -41,8 +41,9 @@ public class Main {
 		
 		
 		SchemaDB schema = new SchemaDB();
-		schema.add(Street.class);
 		schema.add(Address.class);
+		schema.add(Street.class);
+
 		
 		try {
 			new DbManager(info, schema);
@@ -56,6 +57,12 @@ public class Main {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
