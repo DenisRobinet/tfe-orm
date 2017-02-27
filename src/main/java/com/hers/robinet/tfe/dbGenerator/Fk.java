@@ -1,4 +1,4 @@
-package com.hers.robinet.tfe.dialect;
+package com.hers.robinet.tfe.dbGenerator;
 
 import java.util.ArrayList;
 

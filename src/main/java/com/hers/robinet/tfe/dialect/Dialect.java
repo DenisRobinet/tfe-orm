@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+import com.hers.robinet.tfe.dbGenerator.Fk;
+import com.hers.robinet.tfe.dbGenerator.Table;
 import com.hers.robinet.tfe.mananger.InfoConnection;
 
 public abstract class Dialect{

@@ -1,14 +1,9 @@
-package com.hers.robinet.tfe.mananger;
+package com.hers.robinet.tfe.dbGenerator;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-
-import com.hers.robinet.tfe.dialect.Column;
-import com.hers.robinet.tfe.dialect.Filling;
-import com.hers.robinet.tfe.dialect.Fk;
-import com.hers.robinet.tfe.dialect.Table;
 
 
 @SuppressWarnings("rawtypes")

@@ -6,9 +6,9 @@ import java.util.function.BooleanSupplier;
 import java.util.function.LongFunction;
 import java.util.function.Predicate;
 
+import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.mananger.DbManager;
 import com.hers.robinet.tfe.mananger.InfoConnection;
-import com.hers.robinet.tfe.mananger.SchemaDB;
 import com.hers.robinet.tfe.operator.Eq;
 
 public class Main {

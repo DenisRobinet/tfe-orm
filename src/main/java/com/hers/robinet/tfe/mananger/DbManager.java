@@ -10,8 +10,9 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import com.hers.robinet.tfe.dbGenerator.SchemaDB;
+import com.hers.robinet.tfe.dbGenerator.Table;
 import com.hers.robinet.tfe.dialect.Dialect;
-import com.hers.robinet.tfe.dialect.Table;
 import com.hers.robinet.tfe.operator.Operator;
 
 /**
