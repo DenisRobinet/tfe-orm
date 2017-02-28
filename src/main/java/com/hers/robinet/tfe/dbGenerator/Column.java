@@ -1,13 +1,11 @@
 package com.hers.robinet.tfe.dbGenerator;
 
-
-@SuppressWarnings("rawtypes")
 public class Column {
 	private String name;
-	private Class type;
+	private Class<?> type;
 	private boolean autoIncrement;
 	
-	public Column(String name, Class type, boolean autoIncrement) {
+	public Column(String name, Class<?> type, boolean autoIncrement) {
 		super();
 		this.name = name;
 		this.type = type;
@@ -18,7 +16,7 @@ public class Column {
 		return name;
 	}
 
-	public Class getType() {
+	public Class<?> getType() {
 		return type;
 	}
 
@@ -30,7 +28,7 @@ public class Column {
 		this.name = name;
 	}
 
-	public void setType(Class type) {
+	public void setType(Class<?> type) {
 		this.type = type;
 	}
 

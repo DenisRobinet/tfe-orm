@@ -1,5 +1,6 @@
 package com.hers.robinet.tfe.mananger;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -9,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.dbGenerator.Table;
@@ -21,23 +23,24 @@ import com.hers.robinet.tfe.operator.Operator;
  *
  */
 public class DbManager {
-
+	
 	InfoConnection info;
 	Dialect dialect;
 	Connection connection;
+	SchemaDB schema;
 	
 	public DbManager(InfoConnection info, SchemaDB schema) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, NoSuchFieldException, SecurityException{
 		
+		this.schema= schema;
 		this.info = info;
 		dialect = (Dialect)Class.forName(info.getDialect()).newInstance();
 
 		connection = dialect.getConnection(info);
-		
-		ArrayList<Table> tables = schema.generate();
-		
+
 		if(dialect.databaseEmpty(connection, info))
 		{	
-			for (Table table : tables) {
+			LinkedHashMap<String,Table> tables = schema.generate();
+			for (Table table : tables.values()) {
 				StringBuilder build = new StringBuilder();
 				dialect.compile(table, build);
 				build.append(";");
@@ -49,36 +52,84 @@ public class DbManager {
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
-	public void insert(Object model) throws IllegalArgumentException, IllegalAccessException, SQLException
-	{
-		Class type = model.getClass();
-		String TableName = type.getName();
-		Field[] fields = type.getDeclaredFields();
-		Object[] value = new Object[fields.length];
-		
-		for (int i=0;i<fields.length;++i) {
-			
-			if(isPrimaryType(fields[i].getType()))
-			{
-				
-			}
-			fields[i].setAccessible(true);
-			value[i] = fields[i].get(model);
-		}
-		
-		String command = insertCommande(TableName, value);
-		
-		PreparedStatement prep = connection.prepareStatement(command);
-		for(int i=0;i<value.length;++i)
+	public int context(Model model) throws IllegalArgumentException, IllegalAccessException, SQLException{
+		if(model.getContextSate()==Model.toCreate)
 		{
-			prep.setObject(i+1, value[i]);
+			Class<?> type = model.getClass();
+			String TableName = ReflectionHelper.getTableName(type);
+			Field[] fields = type.getDeclaredFields();
+			ArrayList<Object> value = new ArrayList<>();
+			ArrayList<String> columName = new ArrayList<>();
+			
+			for (int i=0;i<fields.length;++i) {
+				fields[i].setAccessible(true);
+				Object valueTemp = fields[i].get(model);
+				if(valueTemp!=null && !isPrimaryType(fields[i].getType()))
+				{
+					Annotation[] annotations = fields[i].getDeclaredAnnotations();
+					
+					for (Annotation annotation : annotations) {
+						if(annotation instanceof javax.persistence.ManyToOne)
+						{
+							RelationShip<Model> relation = (RelationShip<Model>)fields[i].get(model);
+							ArrayList<Field> fieldsFk = ReflectionHelper.getIDs(relation.getElement().getClass());
+
+							for (Field field : fieldsFk) {
+								columName.add(ReflectionHelper.getColumnName(field));
+								value.add(field.get(relation.getElement()));
+							}
+						}
+						else if(annotation instanceof javax.persistence.OneToOne)
+						{
+							RelationShip<Model> relation = (RelationShip<Model>)fields[i].get(model);
+							Model temp =  relation.getElement();
+							if(schema.isBefore(type, temp.getClass())==1)
+							{
+								ArrayList<Field> fieldsFk = ReflectionHelper.getIDs(relation.getElement().getClass());
+
+								for (Field field : fieldsFk) {
+									columName.add(ReflectionHelper.getColumnName(field));
+									value.add(field.get(relation.getElement()));
+								}
+							}
+							else{
+								//need update of the temp (after creation)
+							}
+						}
+					}
+				}
+				else if (valueTemp!=null){
+					columName.add(ReflectionHelper.getColumnName(fields[i]));
+					value.add(valueTemp);
+				}
+
+			}
+			
+			String command = insertCommande(TableName, columName);
+			print(command);
+			if(command != null)
+			{
+				PreparedStatement prep = connection.prepareStatement(command);
+				for(int i=0;i<value.size();++i)
+				{
+					prep.setObject(i+1, value.get(i));
+				}
+				prep.execute();
+				
+				print("Values:"+value.toString());
+			}
 		}
-		prep.execute();
 		
-		print(command+"\nValues:"+Arrays.toString(value));
-		
+		return 0;
 	}
+
+	
+	
+	
+	
+	
+	
+	
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ArrayList<Object> where(Class type, Operator op) throws SQLException, NoSuchMethodError, InvocationTargetException, IllegalAccessException, InstantiationException, IllegalArgumentException, NoSuchMethodException, SecurityException{
@@ -146,7 +197,14 @@ public class DbManager {
 	{
 		if(info.isPrintInfo())
 		{
-			System.out.println(print);
+			if(print==null)
+			{
+				System.out.println("No query to show");
+			}
+			else{
+				System.out.println(print);
+			}
+			
 		}
 	}
 	
@@ -158,21 +216,32 @@ public class DbManager {
 		return "SELECT * FROM "+table+" WHERE "+op.getCondtion();
 	}
 	
-	private String insertCommande(String tableName, Object[] value)
+	private String insertCommande(String tableName, ArrayList<String> columnName)
 	{
+		if(columnName.size()==0)
+		{
+			return null;
+		}
+		
 		StringBuilder build = new StringBuilder();
 		
 		build.append("INSERT INTO ");
 		build.append(tableName);
-		build.append("\nVALUES(");
-		//build.append(value[0]);		
-		build.append("?");
-		
-		for(int i=1;i<value.length;++i)
+		build.append(" (");
+		build.append(columnName.get(0));
+		for(int i=1;i<columnName.size();++i)
 		{
 			build.append(",");
-			//build.append(dialect.valueOf(value[i]));
-			build.append("?");
+			build.append(columnName.get(i));
+		}
+		
+		build.append(") VALUES(");
+		build.append("?");
+		
+		for(int i=1;i<columnName.size();++i)
+		{
+			build.append(",");
+			build.append("? ");
 		}
 		build.append(");");
 		return build.toString();

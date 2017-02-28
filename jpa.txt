@@ -1,0 +1,4 @@
+JPA COMPATIBILITY
+
+@Table(name="tableName")
+@Column(name="columnName")

@@ -5,32 +5,49 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
+import com.hers.robinet.tfe.mananger.Model;
+import com.hers.robinet.tfe.mananger.ReflectionHelper;
 
-@SuppressWarnings("rawtypes")
 public class SchemaDB {
 	
-	ArrayList<Class> Classes = new ArrayList();
+	ArrayList<Class<?>> classes = new ArrayList<Class<?>>();
 	
-	public void add(Class object)
+	public void add(Class<? extends Model> object)
 	{
-		Classes.add(object);
+		classes.add(object);
 	}
 	
-	public ArrayList<Table> generate() throws NoSuchFieldException, SecurityException, ClassNotFoundException
+	public int isBefore(Class<?> first, Class<?> second)
 	{
+		int before = 0;
+		for(int i=0;i<classes.size() && before == 0;++i)
+		{
+			if(classes.get(i)==first)
+			{
+				before = 1;
+			}
+			else if (classes.get(i)==second)
+			{
+				before = -1;
+			}
+		}
+		return before;
+	}
+	
+	public LinkedHashMap<String,Table> generate() throws NoSuchFieldException, SecurityException, ClassNotFoundException
+	{
+		ArrayList<Table> tables= new ArrayList<>();
+		ArrayList<Filling> filling = new ArrayList<Filling>();		
+	
 		
-		
-		ArrayList<Table> tables = new ArrayList();
-		ArrayList<Filling> filling = new ArrayList<Filling>();
-				
-		
-		for(int i=0;i<Classes.size();++i)
+		for(int i=0;i<classes.size();++i)
 		{
 			
-			Field[] fields = Classes.get(i).getDeclaredFields();
+			Field[] fields = classes.get(i).getDeclaredFields();
 			
-			String tableName = Classes.get(i).getSimpleName();
+			String tableName = ReflectionHelper.getTableName(classes.get(i));
 			ArrayList<Column> col = new ArrayList<Column>();
 			ArrayList<Column> ids = new ArrayList<Column>();
 			ArrayList<Fk> fks  = new ArrayList<Fk>();
@@ -39,8 +56,8 @@ public class SchemaDB {
 		
 			for(int j=0;j<fields.length;++j)
 			{
-				Class type = fields[j].getType();
-				String name = fields[j].getName();
+				Class<?> type = fields[j].getType();
+				String name = ReflectionHelper.getColumnName(fields[j]);
 				
 				Annotation[] annotations = fields[j].getDeclaredAnnotations();
 		    	boolean autoIncrement = false;
@@ -51,19 +68,19 @@ public class SchemaDB {
 			    	{
 						if(anno instanceof javax.persistence.OneToOne || anno instanceof javax.persistence.ManyToOne)
 						{
-
 							type = (Class<?>)(((ParameterizedType)fields[j].getGenericType()).getActualTypeArguments()[0]);
 							int k=i;
-							while(k>=0 && Classes.get(k)!=type)
+							while(k>=0 && classes.get(k)!=type)
 							{
 								--k;
 							}
 							
 							if(k!=-1)
 							{
+								
 								ArrayList<Column> ref = tables.get(k).getIds();
 								
-								ArrayList<Column> arrayFK = new ArrayList();
+								ArrayList<Column> arrayFK = new ArrayList<Column>();
 								for (Column column : ref) {
 									Column temp = new Column("FK_"+tables.get(k).getName()+"_"+column.getName(), column.getType(), false);
 									col.add(temp);
@@ -88,7 +105,7 @@ public class SchemaDB {
 					        type = Class.forName(relation.getActualTypeArguments()[0].getTypeName());
 					        
 							int k=i;
-							while(k>=0 && Classes.get(k)!=type)
+							while(k>=0 && classes.get(k)!=type)
 							{
 								--k;
 							}
@@ -155,9 +172,9 @@ public class SchemaDB {
 		
 		for (Filling fill : filling) {
 			 
-			ArrayList<Column> arrayFK = new ArrayList();
-			ArrayList<Fk> fks = new ArrayList();
-			ArrayList<Column> cols  = new ArrayList();
+			ArrayList<Column> arrayFK = new ArrayList<Column>();
+			ArrayList<Fk> fks = new ArrayList<Fk>();
+			ArrayList<Column> cols  = new ArrayList<Column>();
 			
 			ArrayList<Column> ref = fill.getTable1().getIds();
 			for (Column column : ref) {
@@ -169,7 +186,7 @@ public class SchemaDB {
 			Fk fk = new Fk(arrayFK, ref, fill.getTable1());
 			fks.add(fk);
 			
-			arrayFK = new ArrayList();
+			arrayFK = new ArrayList<Column>();
 			ref = fill.getTable2().getIds();
 			for (Column column : ref) {
 				Column temp = new Column("FK_"+fill.getTable2().getName()+"_"+column.getName(), column.getType(), false);
@@ -179,14 +196,17 @@ public class SchemaDB {
 			fk = new Fk(arrayFK, ref, fill.getTable2());
 			fks.add(fk);
 			
-			Table tableTemp = new Table("Fill_"+fill.getTable1().getName()+"_"+fill.getTable2().getName(), cols, cols, fks);
+			String tableTempName = "Fill_"+fill.getTable1().getName()+"_"+fill.getTable2().getName();
+			Table tableTemp = new Table(tableTempName, cols, cols, fks);
 		
 			tables.add(tableTemp);
 		}
 		
-		return tables;
-		
-		
+		LinkedHashMap<String, Table> tablesRes= new LinkedHashMap<>();
+		for (Table table : tables) {
+			tablesRes.put(table.getName(),table);
+		}
+		return tablesRes;
 	}
 
 }

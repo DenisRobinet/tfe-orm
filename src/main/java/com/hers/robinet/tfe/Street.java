@@ -10,15 +10,16 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
+import com.hers.robinet.tfe.mananger.Model;
 import com.hers.robinet.tfe.mananger.RelationShip;
 
 @Entity
-public class Street {
+public class Street extends Model{
 
 	@Id
 	@GeneratedValue
-	private Integer id;
-	private String name;
+	public Integer id;
+	public String name;
 	@ManyToOne
 	private RelationShip<Address> adresses;
 }

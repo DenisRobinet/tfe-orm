@@ -9,12 +9,13 @@ import java.util.function.Predicate;
 import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.mananger.DbManager;
 import com.hers.robinet.tfe.mananger.InfoConnection;
+import com.hers.robinet.tfe.mananger.Model;
+import com.hers.robinet.tfe.mananger.ReflectionHelper;
 import com.hers.robinet.tfe.operator.Eq;
 
 public class Main {
 
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) {	
 		System.out.println("Lunched");
 		/*String name = "MySQL";
 		String url = "jdbc:mysql://localhost:3306/";
@@ -43,10 +44,15 @@ public class Main {
 		SchemaDB schema = new SchemaDB();
 		schema.add(Address.class);
 		schema.add(Street.class);
-
 		
 		try {
-			new DbManager(info, schema);
+			DbManager manager = new DbManager(info, schema);
+			Address addres = new Address();
+			addres.setCity("CITY");
+			manager.context(addres);
+			Street temp = new Street();
+			temp.name = "aa";
+			manager.context(temp);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

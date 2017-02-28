@@ -9,15 +9,21 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
+import com.hers.robinet.tfe.mananger.Model;
 import com.hers.robinet.tfe.mananger.RelationShip;
 
 @Entity
-public class Address{
+@Table(name="test")
+public class Address extends Model{
 
 	  @Id
 	  @GeneratedValue
 	  private Integer id;
+	  @Id
+	  @GeneratedValue
+	  private Integer id2;
 	  @OneToMany
 	  private List<RelationShip<Street>> street;
 	  private String city;

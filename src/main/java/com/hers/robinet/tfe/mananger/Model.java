@@ -1,9 +1,7 @@
 package com.hers.robinet.tfe.mananger;
 
-public class RelationShip<T extends Model> {
+public abstract class Model {
 
-	private T element;
-	
 	public static final int nothing = 0; // or other than create, update, ...
 	public static final int toCreate = 1;
 	public static final int toUpdate = 2;
@@ -11,7 +9,7 @@ public class RelationShip<T extends Model> {
 	
 	private int state = 0;
 	
-	public RelationShip(T element)
+	public Model()
 	{
 		state = toCreate;
 	}
@@ -24,15 +22,5 @@ public class RelationShip<T extends Model> {
 	public int getContextSate()
 	{
 		return state;
-	}
-	
-	public T getElement()
-	{
-		return element;
-	}
-	
-	public void setElement(T element)
-	{
-		this.element = element;
 	}
 }
