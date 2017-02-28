@@ -14,6 +14,7 @@ public class RelationShip<T extends Model> {
 	public RelationShip(T element)
 	{
 		state = toCreate;
+		this.element = element;
 	}
 	
 	public void setContextState(int state)
@@ -34,5 +35,10 @@ public class RelationShip<T extends Model> {
 	public void setElement(T element)
 	{
 		this.element = element;
+	}
+	
+	public String toString()
+	{
+		return "RelationShip to "+element.getClass().getName();
 	}
 }

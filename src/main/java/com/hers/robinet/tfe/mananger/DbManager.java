@@ -58,8 +58,8 @@ public class DbManager {
 			Class<?> type = model.getClass();
 			String TableName = ReflectionHelper.getTableName(type);
 			Field[] fields = type.getDeclaredFields();
-			ArrayList<Object> value = new ArrayList<>();
-			ArrayList<String> columName = new ArrayList<>();
+			ArrayList<Object> value = new ArrayList<Object>();
+			ArrayList<String> columName = new ArrayList<String>();
 			
 			for (int i=0;i<fields.length;++i) {
 				fields[i].setAccessible(true);
@@ -75,7 +75,7 @@ public class DbManager {
 							ArrayList<Field> fieldsFk = ReflectionHelper.getIDs(relation.getElement().getClass());
 
 							for (Field field : fieldsFk) {
-								columName.add(ReflectionHelper.getColumnName(field));
+								columName.add("FK_"+ReflectionHelper.getTableName(relation.getElement().getClass())+"_"+ReflectionHelper.getColumnName(field));
 								value.add(field.get(relation.getElement()));
 							}
 						}
@@ -88,7 +88,7 @@ public class DbManager {
 								ArrayList<Field> fieldsFk = ReflectionHelper.getIDs(relation.getElement().getClass());
 
 								for (Field field : fieldsFk) {
-									columName.add(ReflectionHelper.getColumnName(field));
+									columName.add("FK_"+ReflectionHelper.getTableName(relation.getElement().getClass())+"_"+ReflectionHelper.getColumnName(field));
 									value.add(field.get(relation.getElement()));
 								}
 							}
@@ -225,7 +225,7 @@ public class DbManager {
 		
 		StringBuilder build = new StringBuilder();
 		
-		build.append("INSERT INTO ");
+		build.append("\nINSERT INTO ");
 		build.append(tableName);
 		build.append(" (");
 		build.append(columnName.get(0));

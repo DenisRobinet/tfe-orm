@@ -33,7 +33,7 @@ public class ReflectionHelper {
 	
 	public static ArrayList<Field> getIDs(Class<?> type)
 	{
-		ArrayList<Field> ids = new ArrayList<>();
+		ArrayList<Field> ids = new ArrayList<Field>();
 		Field[] fields = type.getDeclaredFields();
 		
 		for (Field field : fields) {
@@ -51,7 +51,7 @@ public class ReflectionHelper {
 	public static ArrayList<Field> getAnnotationFieldID(Class<?> object)
 	{
 		Field[] fields = object.getDeclaredFields();
-		ArrayList<Field> res = new ArrayList<>();
+		ArrayList<Field> res = new ArrayList<Field>();
 		
 		for (Field field : fields) {
 			Annotation[] annotations = field.getDeclaredAnnotations();

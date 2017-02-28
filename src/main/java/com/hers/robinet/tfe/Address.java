@@ -15,21 +15,15 @@ import com.hers.robinet.tfe.mananger.Model;
 import com.hers.robinet.tfe.mananger.RelationShip;
 
 @Entity
-@Table(name="test")
 public class Address extends Model{
 
 	  @Id
 	  @GeneratedValue
-	  private Integer id;
-	  @Id
-	  @GeneratedValue
-	  private Integer id2;
+	  public Integer id;
 	  @OneToMany
-	  private List<RelationShip<Street>> street;
+	  public List<RelationShip<Street>> street;
 	  private String city;
 	  private String province;
-	  private String country;
-	  private String postcode;
 
 
 	/**
@@ -77,42 +71,6 @@ public class Address extends Model{
 	    return this;
 	  }
 
-	  /**
-	   * @return the country
-	   */
-	  public String getCountry() {
-	    return country;
-	  }
-
-	  /**
-	   * @param country the country to set
-	   */
-	  public Address setCountry(String country) {
-	    this.country = country;
-	    return this;
-	  }
-
-	  /**
-	   * @return the postcode
-	   */
-	  public String getPostcode() {
-	    return postcode;
-	  }
-	  
-	  /**
-	   * @param postcode the postcode to set
-	   */
-	  public Address setPostcode(String postcode) {
-	    this.postcode = postcode;
-	    return this;
-	  }
-
-	@Override
-	public String toString() {
-		return "Address [id=" + id + ", street=" + street + ", city=" + city + ", province=" + province + ", country="
-				+ country + ", postcode=" + postcode + "]";
-	}
-	  
 
 	
 }

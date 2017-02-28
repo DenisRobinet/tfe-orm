@@ -35,7 +35,7 @@ public abstract class Dialect{
 		
 		if(table.getCols().get(0).isAutoIncrement())
 		{
-			build.append(" AUTO_INCREMENT ");
+			build.append(" AUTO_INCREMENT");
 		}
 		
 		for (int i=1;i<table.getCols().size();++i) {
@@ -48,7 +48,7 @@ public abstract class Dialect{
 			
 			if(table.getCols().get(i).isAutoIncrement())
 			{
-				build.append(" AUTO_INCREMENT ");
+				build.append(" AUTO_INCREMENT");
 			}
 			
 		}

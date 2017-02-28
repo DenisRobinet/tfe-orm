@@ -21,5 +21,5 @@ public class Street extends Model{
 	public Integer id;
 	public String name;
 	@ManyToOne
-	private RelationShip<Address> adresses;
+	public RelationShip<Address> adresses;
 }

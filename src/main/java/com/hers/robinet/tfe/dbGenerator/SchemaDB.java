@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 import com.hers.robinet.tfe.mananger.Model;
+import com.hers.robinet.tfe.mananger.ModelException;
 import com.hers.robinet.tfe.mananger.ReflectionHelper;
 
 public class SchemaDB {
@@ -38,13 +39,13 @@ public class SchemaDB {
 	
 	public LinkedHashMap<String,Table> generate() throws NoSuchFieldException, SecurityException, ClassNotFoundException
 	{
-		ArrayList<Table> tables= new ArrayList<>();
+		ArrayList<Table> tables= new ArrayList<Table>();
 		ArrayList<Filling> filling = new ArrayList<Filling>();		
 	
 		
 		for(int i=0;i<classes.size();++i)
 		{
-			
+			boolean haveAutoIncrement = false;
 			Field[] fields = classes.get(i).getDeclaredFields();
 			
 			String tableName = ReflectionHelper.getTableName(classes.get(i));
@@ -140,6 +141,11 @@ public class SchemaDB {
 			    	{
 			    		if(anno instanceof javax.persistence.GeneratedValue)
 			    		{
+			    			if (haveAutoIncrement == true)
+			    			{
+			    				throw new ModelException(classes.get(i).getName()+" : too many @GeneratedValue (only one is accepted)");
+			    			}
+			    			haveAutoIncrement = true;
 			    			temp.setAutoIncrement(true);
 			    		}
 			    		else if(anno instanceof javax.persistence.Id)
@@ -202,7 +208,7 @@ public class SchemaDB {
 			tables.add(tableTemp);
 		}
 		
-		LinkedHashMap<String, Table> tablesRes= new LinkedHashMap<>();
+		LinkedHashMap<String, Table> tablesRes= new LinkedHashMap<String, Table>();
 		for (Table table : tables) {
 			tablesRes.put(table.getName(),table);
 		}
