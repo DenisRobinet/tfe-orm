@@ -9,13 +9,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import com.hers.robinet.tfe.dbGenerator.SchemaDB;
-import com.hers.robinet.tfe.dbGenerator.Table;
 import com.hers.robinet.tfe.dialect.Dialect;
 import com.hers.robinet.tfe.operator.Operator;
+
+import jpaHelper.JpaClass;
+import jpaHelper.ModelException;
 
 /**
  * ACCEPTED TYPE : Integer, Double , String, LocalDateTime
@@ -24,30 +25,42 @@ import com.hers.robinet.tfe.operator.Operator;
  */
 public class DbManager {
 	
+	public static final int noRelation=0;
+	public static final int OneToOne=1;
+	public static final int OneToMany=2;
+	public static final int ManyToOne=3;
+	public static final int ManyToMany=4;
+	
 	InfoConnection info;
 	Dialect dialect;
 	Connection connection;
 	SchemaDB schema;
 	
-	public DbManager(InfoConnection info, SchemaDB schema) throws ClassNotFoundException, IllegalAccessException, InstantiationException, SQLException, NoSuchFieldException, SecurityException{
+	public DbManager(InfoConnection info, SchemaDB schema) throws SQLException, ClassNotFoundException{
 		
 		this.schema= schema;
 		this.info = info;
-		dialect = (Dialect)Class.forName(info.getDialect()).newInstance();
+		try {
+			dialect = (Dialect)Class.forName(info.getDialect()).newInstance();
+		} catch (InstantiationException e) {
+			throw new ModelException("Instanciation failed : "+e.getMessage());
+		} catch (IllegalAccessException e) {
+			throw new ModelException("Illegal access : "+e.getMessage());
+		}
 
 		connection = dialect.getConnection(info);
 
 		if(dialect.databaseEmpty(connection, info))
 		{	
-			LinkedHashMap<String,Table> tables = schema.generate();
-			for (Table table : tables.values()) {
+			LinkedHashMap<String,JpaClass> tables = schema.getSchema();
+			for (JpaClass table : tables.values()) {
 				StringBuilder build = new StringBuilder();
 				dialect.compile(table, build);
 				build.append(";");
 				String query = build.toString();
 
 				print(query);
-				connection.prepareStatement(query).execute();
+				//connection.prepareStatement(query).execute();
 			}			
 		}
 	}
@@ -187,7 +200,7 @@ public class DbManager {
 		
 	}
 	
-	protected boolean isPrimaryType(Class type)
+	public static boolean isPrimaryType(Class<?> type)
 	{
 		return type == Integer.class || type == Double.class || type == String.class || type == Timestamp.class;
 	}

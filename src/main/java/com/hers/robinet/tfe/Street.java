@@ -9,17 +9,19 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import com.hers.robinet.tfe.mananger.Model;
 import com.hers.robinet.tfe.mananger.RelationShip;
 
 @Entity
+@Table(name = "test")
 public class Street extends Model{
 
 	@Id
 	@GeneratedValue
 	public Integer id;
 	public String name;
-	@ManyToOne
-	public RelationShip<Address> adresses;
+	@ManyToMany
+	public List<RelationShip<Address>> adresses;
 }

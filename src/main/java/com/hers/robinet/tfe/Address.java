@@ -20,8 +20,9 @@ public class Address extends Model{
 	  @Id
 	  @GeneratedValue
 	  public Integer id;
-	  @OneToMany
+	  @ManyToMany
 	  public List<RelationShip<Street>> street;
+	  @Id
 	  private String city;
 	  private String province;
 
