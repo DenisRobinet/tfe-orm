@@ -8,8 +8,6 @@ public class JpaAttribute extends JpaRelation{
 	
 	public JpaAttribute(Field attribute)
 	{
-		this.attribute.add(attribute);
-		type.add(attribute.getType());
 		String name=null;
 		for (Annotation annotation : attribute.getAnnotations()){
 			if(annotation instanceof javax.persistence.Column)
@@ -41,7 +39,6 @@ public class JpaAttribute extends JpaRelation{
 		if(name == null)
 			name = attribute.getName();
 		
-		this.name.add(name);
-		
+		typeStruct.add(new JpaType(attribute, name, attribute.getType()));
 	}
 }

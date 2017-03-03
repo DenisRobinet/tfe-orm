@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.NoSuchElementException;
 
 import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.dialect.Dialect;

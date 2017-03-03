@@ -8,11 +8,10 @@ import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.mananger.DbManager;
 
 public class JpaRelationManyToMany extends JpaRelation{
-	
+	JpaClass classRelation;
 	public JpaRelationManyToMany(Field attribute, SchemaDB schema, JpaClass tableClass){
 
 		relationType = DbManager.ManyToMany;
-		System.out.println("azeazeazea");
 		ParameterizedType stringListType;
 		try{
 		stringListType = (ParameterizedType) attribute.getGenericType();
@@ -30,7 +29,7 @@ public class JpaRelationManyToMany extends JpaRelation{
 									 "This error should never append.");
 		}
 	    
-		JpaClass classRelation = schema.getJpaClass(relationWith);
+		classRelation = schema.getJpaClass(relationWith);
 		
 		for (Annotation annotation : attribute.getAnnotations()){
 			if(annotation instanceof javax.persistence.Column)
@@ -57,6 +56,10 @@ public class JpaRelationManyToMany extends JpaRelation{
 			
 			schema.add(new JpaClass(classRelation, tableClass));
 		}
-		
+	}
+	
+	public JpaClass getReferencedTable()
+	{
+		return classRelation;
 	}
 }

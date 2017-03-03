@@ -32,9 +32,6 @@ public class Main {
 		
 		InfoConnection info = new InfoConnection(name, url,database,  user, password, driver, dialect, printInfo);
 		
-		
-		
-		
 		SchemaDB schema = new SchemaDB();
 		schema.add(Address.class);
 		schema.add(Street.class);

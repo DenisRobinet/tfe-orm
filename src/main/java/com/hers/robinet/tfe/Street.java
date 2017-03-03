@@ -15,13 +15,13 @@ import com.hers.robinet.tfe.mananger.Model;
 import com.hers.robinet.tfe.mananger.RelationShip;
 
 @Entity
-@Table(name = "test")
+@Table(name = "Street")
 public class Street extends Model{
 
 	@Id
 	@GeneratedValue
 	public Integer id;
+	@ManyToOne
+	public RelationShip<Address> adresses;
 	public String name;
-	@ManyToMany
-	public List<RelationShip<Address>> adresses;
 }
