@@ -1,4 +1,4 @@
-package jpaHelper;
+package com.hers.robinet.tfe.jpaHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -130,20 +130,25 @@ public abstract class JpaRelation {
 			
 			if (i<el.size())
 			{
-				int temp = i;
-				while(temp<el.size() && el.get(temp).getTypeStruct().size()==0)
+				
+				int tempI = i;
+				int tempInnerI = innerI;
+				
+				while(tempI<el.size() && tempInnerI >= el.get(i).getTypeStruct().size())
 				{
-					++temp;
+					tempInnerI = 0;
+					++tempI;
 				}
 				
+				++tempInnerI;
 				
-				if(i==el.size()-1 && innerI == el.get(i).getTypeStruct().size())
+				if(tempI<el.size() && el.get(tempI).getTypeStruct().size()>=tempInnerI)
 				{
+					return true;
+				}
+				else{
 					return false;
 				}
-				
-				
-				return temp<el.size();
 			}
 			return false;
 		}
@@ -162,9 +167,7 @@ public abstract class JpaRelation {
 			}
 			
 			++innerI;
-			
-			el.get(i);
-			
+
 			return el.get(i).getTypeStruct().get(innerI-1);
 		}	
 	}

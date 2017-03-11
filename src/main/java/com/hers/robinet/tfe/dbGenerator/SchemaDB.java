@@ -2,9 +2,8 @@ package com.hers.robinet.tfe.dbGenerator;
 
 import java.util.LinkedHashMap;
 
+import com.hers.robinet.tfe.jpaHelper.JpaClass;
 import com.hers.robinet.tfe.mananger.Model;
-
-import jpaHelper.JpaClass;
 
 public class SchemaDB {
 	

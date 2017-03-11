@@ -3,13 +3,11 @@ package com.hers.robinet.tfe.dialect;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.Iterator;
 
+import com.hers.robinet.tfe.jpaHelper.JpaClass;
+import com.hers.robinet.tfe.jpaHelper.JpaRelation;
+import com.hers.robinet.tfe.jpaHelper.JpaType;
 import com.hers.robinet.tfe.mananger.InfoConnection;
-
-import jpaHelper.JpaClass;
-import jpaHelper.JpaRelation;
-import jpaHelper.JpaType;
 
 public abstract class Dialect{
 
@@ -36,7 +34,6 @@ public abstract class Dialect{
 		build.append(" (\n\t");
 		
 		JpaRelation.JpaRelationIterator it = new JpaRelation.JpaRelationIterator(table.getAttributes());
-		
 		JpaType type = it.next();
 		
 		build.append(type.getName());
@@ -117,33 +114,7 @@ public abstract class Dialect{
 				}
 			}
 		}
-		
 
-		/*
-		for (JpaRelation fk : table.getFks()) {
-			build.append(",\n\t");
-			build.append(kw_ForeignKey);
-			build.append(" (");
-			
-			build.append(fk.getCols().get(0).getName());
-			for (int i=1;i<fk.getCols().size();++i) {
-				build.append(", ");
-				build.append(fk.getCols().get(i).getName());
-			}
-			
-			build.append(") ");
-			build.append(kw_References);
-			build.append(" ");
-			build.append(fk.getTable().getName());
-			build.append("(");
-			build.append(fk.getRef().get(0).getName());
-			for (int i=1;i<fk.getCols().size();++i) {
-				build.append(", ");
-				build.append(fk.getRef().get(i).getName());
-			}
-			
-			build.append(")");
-		}*/
 		build.append("\n)");
 	}
 }

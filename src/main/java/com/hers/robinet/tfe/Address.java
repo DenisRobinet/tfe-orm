@@ -20,10 +20,10 @@ public class Address extends Model{
 	  @Id
 	  @GeneratedValue
 	  public Integer id;
-	  @OneToMany
-	  public List<RelationShip<Street>> street;
 	  @Id
 	  private String city;
+	  @OneToOne
+	  public RelationShip<Street> street;
 	  private String province;
 
 

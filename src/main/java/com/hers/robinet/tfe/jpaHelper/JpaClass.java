@@ -1,11 +1,13 @@
-package jpaHelper;
+package com.hers.robinet.tfe.jpaHelper;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import com.hers.robinet.tfe.dbGenerator.SchemaDB;
+import com.hers.robinet.tfe.dialect.Dialect;
 import com.hers.robinet.tfe.mananger.DbManager;
 
 /**
@@ -20,14 +22,45 @@ public class JpaClass{
 		return type.getName();
 	}
 	
+	private Class<?> type;
+	private String identifiantName;
+	private String name;
+	private ArrayList<JpaIndex> indexes = new ArrayList<JpaIndex>();
+	private ArrayList<JpaRelation> attributes = new ArrayList<JpaRelation>();
+	private ArrayList<JpaRelation> ids = new ArrayList<JpaRelation>();
+	private ArrayList<JpaRelation> fks = new ArrayList<JpaRelation>();
+	
+	private PreparedStatement insert = null;
+	private PreparedStatement update = null;
+	private PreparedStatement delete = null;
+	
+	public Class<?> getType() {
+		return type;
+	}
 
-	protected Class<?> type;
-	protected String identifiantName;
-	protected String name;
-	protected ArrayList<JpaIndex> indexes = new ArrayList<JpaIndex>();
-	protected ArrayList<JpaRelation> attributes = new ArrayList<JpaRelation>();
-	protected ArrayList<JpaRelation> ids = new ArrayList<JpaRelation>();
-	protected ArrayList<JpaRelation> fks = new ArrayList<JpaRelation>();
+	public String getName() {
+		return name;
+	}
+
+	public ArrayList<JpaIndex> getIndexes() {
+		return indexes;
+	}
+
+	public ArrayList<JpaRelation> getAttributes() {
+		return attributes;
+	}
+
+	public ArrayList<JpaRelation> getIds() {
+		return ids;
+	}
+
+	public ArrayList<JpaRelation> getFks() {
+		return fks;
+	}
+
+	public String getIdentifiantName() {
+		return identifiantName;
+	}
 	
 	public JpaClass(Class<?> type, SchemaDB schema)
 	{
@@ -90,31 +123,17 @@ public class JpaClass{
 		
 	}
 	
-	public Class<?> getType() {
-		return type;
+	public void generatePrepareStatement(Connection connection, Dialect dialect)
+	{
+		connection.prepareStatement("");
 	}
+	
+	public 
+	
+	
+	
+	
+	
+	
 
-	public String getName() {
-		return name;
-	}
-
-	public ArrayList<JpaIndex> getIndexes() {
-		return indexes;
-	}
-
-	public ArrayList<JpaRelation> getAttributes() {
-		return attributes;
-	}
-
-	public ArrayList<JpaRelation> getIds() {
-		return ids;
-	}
-
-	public ArrayList<JpaRelation> getFks() {
-		return fks;
-	}
-
-	public String getIdentifiantName() {
-		return identifiantName;
-	}
 }

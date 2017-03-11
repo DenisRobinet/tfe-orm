@@ -14,10 +14,9 @@ import java.util.NoSuchElementException;
 
 import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.dialect.Dialect;
+import com.hers.robinet.tfe.jpaHelper.JpaClass;
+import com.hers.robinet.tfe.jpaHelper.ModelException;
 import com.hers.robinet.tfe.operator.Operator;
-
-import jpaHelper.JpaClass;
-import jpaHelper.ModelException;
 
 /**
  * ACCEPTED TYPE : Integer, Double , String, LocalDateTime
@@ -69,69 +68,10 @@ public class DbManager {
 	public int context(Model model) throws IllegalArgumentException, IllegalAccessException, SQLException{
 		if(model.getContextSate()==Model.toCreate)
 		{
-			Class<?> type = model.getClass();
-			String TableName = ReflectionHelper.getTableName(type);
-			Field[] fields = type.getDeclaredFields();
-			ArrayList<Object> value = new ArrayList<Object>();
-			ArrayList<String> columName = new ArrayList<String>();
-			
-			for (int i=0;i<fields.length;++i) {
-				fields[i].setAccessible(true);
-				Object valueTemp = fields[i].get(model);
-				if(valueTemp!=null && !isPrimaryType(fields[i].getType()))
-				{
-					Annotation[] annotations = fields[i].getDeclaredAnnotations();
-					
-					for (Annotation annotation : annotations) {
-						if(annotation instanceof javax.persistence.ManyToOne)
-						{
-							RelationShip<Model> relation = (RelationShip<Model>)fields[i].get(model);
-							ArrayList<Field> fieldsFk = ReflectionHelper.getIDs(relation.getElement().getClass());
+			String query = "INSERT INTO  ";
+			JpaClass jpaClass = schema.getJpaClass(model.getClass());
+			query+=jpaClass.getName();
 
-							for (Field field : fieldsFk) {
-								columName.add("FK_"+ReflectionHelper.getTableName(relation.getElement().getClass())+"_"+ReflectionHelper.getColumnName(field));
-								value.add(field.get(relation.getElement()));
-							}
-						}
-						else if(annotation instanceof javax.persistence.OneToOne)
-						{
-							RelationShip<Model> relation = (RelationShip<Model>)fields[i].get(model);
-							Model temp =  relation.getElement();
-							if(schema.isBefore(type, temp.getClass())==1)
-							{
-								ArrayList<Field> fieldsFk = ReflectionHelper.getIDs(relation.getElement().getClass());
-
-								for (Field field : fieldsFk) {
-									columName.add("FK_"+ReflectionHelper.getTableName(relation.getElement().getClass())+"_"+ReflectionHelper.getColumnName(field));
-									value.add(field.get(relation.getElement()));
-								}
-							}
-							else{
-								//need update of the temp (after creation)
-							}
-						}
-					}
-				}
-				else if (valueTemp!=null){
-					columName.add(ReflectionHelper.getColumnName(fields[i]));
-					value.add(valueTemp);
-				}
-
-			}
-			
-			String command = insertCommande(TableName, columName);
-			print(command);
-			if(command != null)
-			{
-				PreparedStatement prep = connection.prepareStatement(command);
-				for(int i=0;i<value.size();++i)
-				{
-					prep.setObject(i+1, value.get(i));
-				}
-				prep.execute();
-				
-				print("Values:"+value.toString());
-			}
 		}
 		
 		return 0;

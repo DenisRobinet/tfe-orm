@@ -1,4 +1,4 @@
-package jpaHelper;
+package com.hers.robinet.tfe.jpaHelper;
 
 import java.lang.reflect.Field;
 

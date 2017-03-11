@@ -21,7 +21,7 @@ public class Street extends Model{
 	@Id
 	@GeneratedValue
 	public Integer id;
-	@ManyToOne
-	public RelationShip<Address> adresses;
 	public String name;
+	@OneToOne
+	public RelationShip<Address> adresses;
 }

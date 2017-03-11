@@ -1,4 +1,4 @@
-package jpaHelper;
+package com.hers.robinet.tfe.jpaHelper;
 
 public class JpaIndex {
 
