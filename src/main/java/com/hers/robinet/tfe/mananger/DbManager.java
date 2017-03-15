@@ -1,21 +1,17 @@
 package com.hers.robinet.tfe.mananger;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.hers.robinet.tfe.dbGenerator.SchemaDB;
+import com.hers.robinet.tfe.descriptor.ClassDescriptor;
+import com.hers.robinet.tfe.descriptor.ModelRuntimeException;
 import com.hers.robinet.tfe.dialect.Dialect;
-import com.hers.robinet.tfe.jpaHelper.JpaClass;
-import com.hers.robinet.tfe.jpaHelper.ModelException;
 import com.hers.robinet.tfe.operator.Operator;
 
 /**
@@ -24,6 +20,8 @@ import com.hers.robinet.tfe.operator.Operator;
  *
  */
 public class DbManager {
+	
+	private final static Logger LOGGER = Logger.getLogger(DbManager.class.getName());
 	
 	public static final int noRelation=0;
 	public static final int OneToOne=1;
@@ -43,102 +41,58 @@ public class DbManager {
 		try {
 			dialect = (Dialect)Class.forName(info.getDialect()).newInstance();
 		} catch (InstantiationException e) {
-			throw new ModelException("Instanciation failed : "+e.getMessage());
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			throw new ModelRuntimeException("Instanciation failed : "+e.getMessage());
 		} catch (IllegalAccessException e) {
-			throw new ModelException("Illegal access : "+e.getMessage());
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			throw new ModelRuntimeException("Illegal access : "+e.getMessage());
 		}
 
 		connection = dialect.getConnection(info);
-
-		if(dialect.databaseEmpty(connection, info))
-		{	
-			LinkedHashMap<String,JpaClass> tables = schema.getSchema();
-			for (JpaClass table : tables.values()) {
-				StringBuilder build = new StringBuilder();
-				dialect.compile(table, build);
-				build.append(";");
-				String query = build.toString();
-
-				print(query);
-				//connection.prepareStatement(query).execute();
-			}			
+		LinkedHashMap<String,ClassDescriptor> tables = schema.getSchema();
+		
+		boolean isEmpty = dialect.databaseEmpty(connection, info);
+		for (ClassDescriptor table : tables.values()) {
+			table.prepare(connection, dialect, isEmpty);
 		}
 	}
 	
 	public int context(Model model) throws IllegalArgumentException, IllegalAccessException, SQLException{
 		if(model.getContextSate()==Model.toCreate)
 		{
-			String query = "INSERT INTO  ";
-			JpaClass jpaClass = schema.getJpaClass(model.getClass());
-			query+=jpaClass.getName();
-
+			
 		}
 		
 		return 0;
 	}
 
 	
-	
-	
-	
-	
-	
-	
-	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ArrayList<Object> where(Class type, Operator op) throws SQLException, NoSuchMethodError, InvocationTargetException, IllegalAccessException, InstantiationException, IllegalArgumentException, NoSuchMethodException, SecurityException{
-		
-		String command = whereCommande(type.getName(), op);
-		
-		print(command);
-		
-		ResultSet set = connection.prepareStatement(command).executeQuery();
-		
-		
-		Field[] fields =  type.getDeclaredFields();
-		Class[] cArg = new Class[fields.length];
-		
-		for(int i=0;i<cArg.length;++i)
-		{
-			cArg[i] = fields[i].getType();
-		}
-		
-		ArrayList<Object> res = new ArrayList();
-		while(set.next())
-		{
-			Object[] initargs = new Object[cArg.length];
-			
-			for (int i=0; i<fields.length;++i) {
-							
-				initargs[i] = fields[i].getType().cast(set.getObject(fields[i].getName()));
-				
-			}
-			
-			res.add((Object)type.getDeclaredConstructor(cArg).newInstance(initargs));
-		}
-		
-		return res;
+	/**
+	 * Load a model with his id
+	 * @param model
+	 * @return
+	 * @throws SQLException
+	 */
+	public boolean select(Model model) throws SQLException
+	{	
+		ClassDescriptor classDesc = schema.getClassDescriptor(model.getClass());
+		return  classDesc.select(connection, dialect, model);
 	}
 	
-
-	
-	@SuppressWarnings("rawtypes")
-	public void update(Object model, Operator op) throws IllegalArgumentException, IllegalAccessException
-	{
-		Class type = model.getClass();
-		String TableName = type.getName();
-		Field[] fields = type.getDeclaredFields();
-		Object[] value = new Object[fields.length];
-		
-		for (int i=0;i<fields.length;++i) {
-			fields[i].setAccessible(true);
-			value[i] = fields[i].get(model);
-		}
-	}
-	
-	public void delete(Object model)
-	{
-		
+	/**
+	 * Load a model with the operator
+	 * @param model
+	 * @param operator
+	 * @return
+	 * @throws SQLException
+	 */
+	public Model select(Class<?> model, Operator operator) throws SQLException
+	{	
+		//TODO
+		ClassDescriptor classDesc = schema.getClassDescriptor(model);
+	 	PreparedStatement prepState = classDesc.select(connection, dialect, operator);
+		ResultSet resultset = prepState.executeQuery();
+		return classDesc.generate(resultset);
 	}
 	
 	public static boolean isPrimaryType(Class<?> type)
@@ -161,43 +115,5 @@ public class DbManager {
 			
 		}
 	}
-	
-	
-	//TODO WITH DIALECT ------------------------------------------------------------------
-	
-	private String whereCommande(String table, Operator op)
-	{
-		return "SELECT * FROM "+table+" WHERE "+op.getCondtion();
-	}
-	
-	private String insertCommande(String tableName, ArrayList<String> columnName)
-	{
-		if(columnName.size()==0)
-		{
-			return null;
-		}
-		
-		StringBuilder build = new StringBuilder();
-		
-		build.append("\nINSERT INTO ");
-		build.append(tableName);
-		build.append(" (");
-		build.append(columnName.get(0));
-		for(int i=1;i<columnName.size();++i)
-		{
-			build.append(",");
-			build.append(columnName.get(i));
-		}
-		
-		build.append(") VALUES(");
-		build.append("?");
-		
-		for(int i=1;i<columnName.size();++i)
-		{
-			build.append(",");
-			build.append("? ");
-		}
-		build.append(");");
-		return build.toString();
-	}
+
 }

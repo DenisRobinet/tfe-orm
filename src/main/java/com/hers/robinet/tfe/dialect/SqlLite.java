@@ -8,10 +8,9 @@ import java.sql.Timestamp;
 import com.hers.robinet.tfe.mananger.InfoConnection;
 
 public class SqlLite extends Dialect{
-	
+	 
 	@Override
-	@SuppressWarnings("rawtypes") 
-	public String typeOf(Class type) {
+	public String typeOf(Class<?> type) {
 		if(type == String.class)
 		{
 			return "TEXT";

@@ -2,15 +2,15 @@ package com.hers.robinet.tfe;
 
 import java.sql.SQLException;
 
-import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.mananger.DbManager;
 import com.hers.robinet.tfe.mananger.InfoConnection;
 import com.hers.robinet.tfe.mananger.RelationShip;
+import com.hers.robinet.tfe.mananger.SchemaDB;
 
 public class Main {
 
 	public static void main(String[] args) {
-		/*
+		
 		String name = "MySQL";
 		String url = "jdbc:mysql://localhost:3306/";
 		String database = "tfe";
@@ -18,9 +18,9 @@ public class Main {
 		String password = "";
 		String driver = "com.mysql.jdbc.Driver";
 		String dialect = "com.hers.robinet.tfe.dialect.MySql";
-		boolean printInfo = InfoConnection.showInfo;*/
+		boolean printInfo = InfoConnection.showInfo;
 		
-		
+		/*
 		String name = "SqlLite";
 		String url = "jdbc:sqlite:";
 		String database = "tfe.db";
@@ -28,7 +28,7 @@ public class Main {
 		String password = "";
 		String driver = "org.sqlite.JDBC";
 		String dialect = "com.hers.robinet.tfe.dialect.SqlLite";
-		boolean printInfo = InfoConnection.showInfo;
+		boolean printInfo = InfoConnection.showInfo;*/
 		
 		InfoConnection info = new InfoConnection(name, url,database,  user, password, driver, dialect, printInfo);
 		
@@ -39,13 +39,17 @@ public class Main {
 		try {
 			DbManager manager = new DbManager(info, schema);
 
-			Street temp = new Street();
-			Address ad = new Address();
+			Street ad = new Street();
 			ad.id = 1;
-			ad.setCity("CITY");
-			//manager.context(ad);
-			temp.name = "aa";
-			//manager.context(temp);
+
+			boolean res = manager.select(ad);
+			if(res)
+			{
+				System.out.println(ad.name);
+			}
+			else{
+				System.out.println("snif");
+			}
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}  catch (SQLException e) {

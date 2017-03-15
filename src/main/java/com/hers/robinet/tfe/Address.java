@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Index;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -16,15 +17,14 @@ import com.hers.robinet.tfe.mananger.RelationShip;
 
 @Entity
 public class Address extends Model{
-
 	  @Id
 	  @GeneratedValue
 	  public Integer id;
-	  @Id
 	  private String city;
+	  private String province;
 	  @OneToOne
 	  public RelationShip<Street> street;
-	  private String province;
+
 
 
 	/**

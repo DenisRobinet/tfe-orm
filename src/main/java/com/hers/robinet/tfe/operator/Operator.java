@@ -1,6 +1,8 @@
 package com.hers.robinet.tfe.operator;
 
+import com.hers.robinet.tfe.dialect.Dialect;
+
 public abstract interface Operator {
 
-	public String getCondtion();
+	public void getCondtion(Dialect dialect, StringBuilder sb);
 }

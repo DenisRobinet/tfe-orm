@@ -1,15 +1,20 @@
-package com.hers.robinet.tfe.jpaHelper;
+package com.hers.robinet.tfe.descriptor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import com.hers.robinet.tfe.dbGenerator.SchemaDB;
 import com.hers.robinet.tfe.mananger.DbManager;
+import com.hers.robinet.tfe.mananger.InternalException;
+import com.hers.robinet.tfe.mananger.SchemaDB;
 
-public class JpaRelationManyToMany extends JpaRelation{
-	JpaClass classRelation;
-	public JpaRelationManyToMany(Field attribute, SchemaDB schema, JpaClass tableClass){
+public class RelationManyToManyDescriptor extends RelationDescriptor{
+	private final static Logger LOGGER = Logger.getLogger(DbManager.class.getName());
+	
+	ClassDescriptor classRelation;
+	public RelationManyToManyDescriptor(Field attribute, SchemaDB schema, ClassDescriptor tableClass){
 
 		relationType = DbManager.ManyToMany;
 		ParameterizedType stringListType;
@@ -17,7 +22,7 @@ public class JpaRelationManyToMany extends JpaRelation{
 		stringListType = (ParameterizedType) attribute.getGenericType();
 		}catch(ClassCastException e)
 		{
-			throw new ModelException(tableClass.getIdentifiantName()+" don't have a List()");
+			throw new ModelRuntimeException(tableClass.getIdentifiantName()+" don't have a List()");
 		}
 	    ParameterizedType relation = (ParameterizedType)stringListType.getActualTypeArguments()[0];
 	    
@@ -25,11 +30,11 @@ public class JpaRelationManyToMany extends JpaRelation{
 	    try {
 	    	relationWith = Class.forName(relation.getActualTypeArguments()[0].getTypeName());
 		} catch (ClassNotFoundException e) {
-			throw new ModelException("Error : the class "+relation.getActualTypeArguments()[0].getTypeName()+" cannot be found\n"+
-									 "This error should never append.");
+			LOGGER.log(Level.SEVERE, e.getMessage(), e);
+			throw new InternalException("Error : the class "+relation.getActualTypeArguments()[0].getTypeName()+" cannot be found");
 		}
 	    
-		classRelation = schema.getJpaClass(relationWith);
+		classRelation = schema.getClassDescriptor(relationWith);
 		
 		for (Annotation annotation : attribute.getAnnotations()){
 			if(annotation instanceof javax.persistence.Column)
@@ -42,7 +47,7 @@ public class JpaRelationManyToMany extends JpaRelation{
 				isId = true;
 			}
 			else if (annotation instanceof javax.persistence.GeneratedValue){
-				throw new ModelException("@GeneratedValue can only be use on Integer");
+				throw new ModelRuntimeException("@GeneratedValue can only be use on Integer");
 			}
 		}
 		
@@ -54,11 +59,11 @@ public class JpaRelationManyToMany extends JpaRelation{
 		else{
 			isAbstract = true;
 			
-			schema.add(new JpaClass(classRelation, tableClass));
+			schema.add(new ClassDescriptor(classRelation, tableClass));
 		}
 	}
 	
-	public JpaClass getReferencedTable()
+	public ClassDescriptor getReferencedTable()
 	{
 		return classRelation;
 	}

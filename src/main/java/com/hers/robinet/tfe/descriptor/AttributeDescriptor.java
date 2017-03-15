@@ -1,12 +1,12 @@
-package com.hers.robinet.tfe.jpaHelper;
+package com.hers.robinet.tfe.descriptor;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 
-public class JpaAttribute extends JpaRelation{
+public class AttributeDescriptor extends RelationDescriptor{
 	
-	public JpaAttribute(Field attribute)
+	public AttributeDescriptor(Field attribute)
 	{
 		String name=null;
 		for (Annotation annotation : attribute.getAnnotations()){
@@ -31,7 +31,7 @@ public class JpaAttribute extends JpaRelation{
 					isId = true;
 				}
 				else{
-					throw new ModelException("@GeneratedValue can only be use on Integer");
+					throw new ModelRuntimeException("@GeneratedValue can only be use on Integer");
 				}
 			}
 		}
@@ -39,6 +39,6 @@ public class JpaAttribute extends JpaRelation{
 		if(name == null)
 			name = attribute.getName();
 		
-		typeStruct.add(new JpaType(attribute, name, attribute.getType()));
+		typeStruct.add(new TypeDescriptor(attribute, name, attribute.getType()));
 	}
 }

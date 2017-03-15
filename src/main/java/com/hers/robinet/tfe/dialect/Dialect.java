@@ -4,18 +4,36 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import com.hers.robinet.tfe.jpaHelper.JpaClass;
-import com.hers.robinet.tfe.jpaHelper.JpaRelation;
-import com.hers.robinet.tfe.jpaHelper.JpaType;
+import com.hers.robinet.tfe.descriptor.ClassDescriptor;
+import com.hers.robinet.tfe.descriptor.RelationDescriptor;
+import com.hers.robinet.tfe.descriptor.TypeDescriptor;
 import com.hers.robinet.tfe.mananger.InfoConnection;
+import com.hers.robinet.tfe.operator.Operator;
 
 public abstract class Dialect{
 
-	private static final String kw_CreateTable = "CREATE TABLE";
-	private static final String kw_AutoIncrement = "AUTO_INCREMENT";
-	private static final String kw_PrimaryKey = "PRIMARY KEY";
-	private static final String kw_ForeignKey = "FOREIGN KEY";
-	private static final String kw_ReferencesFK = "REFERENCES";
+	public static final String equals = "=";
+	public String getEquals()
+	{
+		return equals;
+	}
+	public static final String and = "AND";
+	public String getAnd(){
+		return and;
+	}
+	
+	protected static final String kw_CreateTable = "CREATE TABLE";
+	protected static final String kw_AutoIncrement = "AUTO_INCREMENT";
+	protected static final String kw_PrimaryKey = "PRIMARY KEY";
+	protected static final String kw_ForeignKey = "FOREIGN KEY";
+	protected static final String kw_ReferencesFK = "REFERENCES";
+	
+	protected static final String kw_Insert = "INSERT INTO";
+	protected static final String kw_Values = "VALUES";
+	
+	protected static final String kw_Select = "SELECT";
+	protected static final String kw_From = "FROM";
+	protected static final String kw_Where = "WHERE";
 	
 	public Connection getConnection(InfoConnection info) throws SQLException, ClassNotFoundException{
 		Class.forName(info.getDriver());
@@ -27,14 +45,17 @@ public abstract class Dialect{
 	public abstract boolean databaseEmpty(Connection connection, InfoConnection info) throws SQLException;
 
 
-	public void compile(JpaClass table, StringBuilder build) {
+	//TODO INDEX, NOT NULL, ...
+	public String compileCreate(ClassDescriptor table) {
+		StringBuilder build = new StringBuilder();
+		
 		build.append(kw_CreateTable);
 		build.append(" ");
 		build.append(table.getName());
 		build.append(" (\n\t");
 		
-		JpaRelation.JpaRelationIterator it = new JpaRelation.JpaRelationIterator(table.getAttributes());
-		JpaType type = it.next();
+		RelationDescriptor.JpaRelationIterator it = new RelationDescriptor.JpaRelationIterator(table.getAttributes());
+		TypeDescriptor type = it.next();
 		
 		build.append(type.getName());
 		build.append(" ");
@@ -61,7 +82,7 @@ public abstract class Dialect{
 			}
 		}
 
-		it = new JpaRelation.JpaRelationIterator(table.getIds());
+		it = new RelationDescriptor.JpaRelationIterator(table.getIds());
 		if(it.hasNext())
 		{
 			build.append(",\n\t");
@@ -79,7 +100,7 @@ public abstract class Dialect{
 			build.append(")");
 		}
 		
-		for (JpaRelation rel : table.getFks()) {
+		for (RelationDescriptor rel : table.getFks()) {
 			if(!rel.isAbstract())
 			{
 				build.append(",\n\t");
@@ -99,7 +120,7 @@ public abstract class Dialect{
 				build.append("(");
 				
 	
-				it = new JpaRelation.JpaRelationIterator(rel.getReferencedTable().getIds());
+				it = new RelationDescriptor.JpaRelationIterator(rel.getReferencedTable().getIds());
 				if(it.hasNext())
 				{
 					type = it.next();
@@ -116,5 +137,63 @@ public abstract class Dialect{
 		}
 
 		build.append("\n)");
+		
+		return build.toString();
+	}
+	
+	public String compileInsert(ClassDescriptor table){
+		StringBuilder build = new StringBuilder();
+		
+		build.append(kw_Insert);
+		build.append(" ");
+		build.append(table.getName());
+		build.append(" (");
+		
+		RelationDescriptor.JpaRelationIterator it = new RelationDescriptor.JpaRelationIterator(table.getAttributes());
+		TypeDescriptor type = it.next();
+
+		build.append(type.getName());
+		int nb=1;
+		while(it.hasNext())
+		{
+			type = it.next();
+			build.append(", ");
+			build.append(type.getName());
+			++nb;
+		}
+		
+		build.append(") ");
+		build.append(kw_Values);
+		build.append("(?");
+		
+		for(int i=1;i<nb;++i)
+		{
+			build.append(", ?");
+		}
+		
+		build.append(")");
+		return build.toString();
+	}
+	
+	public String compileSelectAll(ClassDescriptor table, Operator op)
+	{
+		StringBuilder build = new StringBuilder();
+		
+		build.append(kw_Select);
+		build.append(" * ");
+		build.append(kw_From);
+		build.append(" ");
+		build.append(table.getName());
+		build.append(" ");
+		build.append(kw_Where);
+		build.append(" ");
+		
+		op.getCondtion(this, build);
+		
+		return build.toString();
+	}
+	
+	public String compileUpdate(ClassDescriptor table){
+		return null;
 	}
 }
